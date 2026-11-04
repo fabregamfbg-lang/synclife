@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SyncLife | Organização Pessoal Mobile</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <meta name="theme-color" content="#020617">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SyncLife">
+  <meta name="description" content="SyncLife - Seu organizador pessoal mobile com sincronização inteligente do Google Agenda e To-Do List integrada.">
+  
+  <!-- Web App Manifest embutido via Data URI -->
+  <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22SyncLife%22%2C%22short_name%22%3A%22SyncLife%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23020617%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20512%20512'%3E%3Crect%20width%3D'512'%20height%3D'512'%20rx%3D'128'%20fill%3D'%236366f1'%2F%3E%3Cpath%20d%3D'M160%20256l64%2064%20128-128'%20stroke%3D'%23ffffff'%20stroke-width%3D'48'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%20fill%3D'none'%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#141c2e',
+              900: '#0f172a',
+              950: '#020617',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.25s ease-out forwards',
+            'bounce-short': 'bounceShort 0.4s ease-out',
+            'pulse-subtle': 'pulseSubtle 2.5s infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(6px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            bounceShort: {
+              '0%, 100%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.08)' },
+            },
+            pulseSubtle: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.6' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Identity Services (OAuth2) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Estilos customizados para experiência nativa mobile -->
+  <style>
+    /* Remove o highlight azul padrão de toque no mobile */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* Scrollbar oculta para visual fluido estilo app */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Suporte a Safe Area de notch e barra de gestos no iPhone/Android */
+    .pb-safe {
+      padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 76px);
+    }
+    .pt-safe {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* Efeito de vidro sutil */
+    .glass-nav {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen selection:bg-indigo-500/30 selection:text-indigo-200">
+
+  <!-- Container centralizado simulando mobile nativo ou tela cheia em celulares -->
+  <div class="mx-auto max-w-md min-h-screen flex flex-col relative pb-safe">
+
+    <!-- ==================== HEADER DO APP ==================== -->
+    <header class="sticky top-0 z-40 glass-nav border-b border-slate-850 px-4 py-3 pt-safe">
+      <div class="flex items-center justify-between">
+        
+        <!-- Logo & Identidade -->
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 p-0.5 shadow-lg shadow-indigo-500/20 flex items-center justify-center">
+            <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+              <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-base font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                SyncLife
+              </h1>
+              <span id="badgeDemo" class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-800/60 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                Demo
+              </span>
+            </div>
+            <p id="headerSubtitle" class="text-[11px] text-slate-400 font-medium">Sincronização Ativa</p>
+          </div>
+        </div>
+
+        <!-- Ações do Header -->
+        <div class="flex items-center gap-2">
+          <!-- Botão Testar Aviso Rápido -->
+          <button id="btnQuickNotify" title="Testar Notificação" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 active:scale-95 active:bg-slate-850 hover:text-white transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+
+          <!-- Botão Configurações API / Google -->
+          <button id="btnOpenSettings" title="Configurar API Google" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 active:scale-95 active:bg-slate-850 hover:text-white transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==================== ÁREA DE CONTEÚDO PRINCIPAL (TELAS) ==================== -->
+    <main class="flex-1 px-4 py-4 space-y-5">
+
+      <!-- ==================== TELA 1: INÍCIO (DASHBOARD & TO-DO) ==================== -->
+      <section id="screenHome" class="space-y-5 animate-fade-in">
+
+        <!-- Card de Boas-Vindas & Status de Sincronização -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 p-4 border border-slate-800 shadow-xl">
+          <div class="absolute -right-8 -top-8 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <span id="currentDateDisplay" class="text-xs font-semibold uppercase tracking-wider text-indigo-400">
+                Hoje
+              </span>
+              <h2 class="text-lg font-bold text-white mt-0.5">Seu Foco Diário</h2>
+            </div>
+            <div class="text-right">
+              <span id="taskProgressBadge" class="text-xs font-bold px-2 py-1 rounded-full bg-slate-800 border border-slate-700 text-emerald-400">
+                0 / 0
+              </span>
+            </div>
+          </div>
+
+          <!-- Barra de Progresso do Dia -->
+          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mb-4">
+            <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full w-0 transition-all duration-500 ease-out"></div>
+          </div>
+
+          <!-- Botão Principal: Sincronizar Google -->
+          <div class="flex flex-col gap-2">
+            <button id="btnSyncGoogle" class="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 active:scale-95 transition-all">
+              <!-- Ícone do Google Calendar -->
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+              </svg>
+              <span id="btnSyncText">Sincronizar Google Agenda</span>
+              <span id="syncSpinner" class="hidden">
+                <svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+              </span>
+            </button>
+
+            <!-- Banner de regra inteligente do Google Agenda -->
+            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-indigo-950/40 border border-indigo-900/50 text-[11px] text-indigo-300">
+              <svg class="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              <p class="truncate">
+                Eventos com <strong class="text-white font-semibold">[TAREFA]</strong> ou <strong class="text-white font-semibold">[FOCAR]</strong> viram To-Do automaticamente.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== SEÇÃO TO-DO LIST ==================== -->
+        <div class="space-y-3">
+          <!-- Cabeçalho da Lista & Filtros -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-white text-base">Tarefas do Dia</h3>
+              <span id="taskCountPill" class="text-xs px-2 py-0.5 rounded-full bg-slate-850 text-slate-300 border border-slate-800">
+                0
+              </span>
+            </div>
+
+            <!-- Filtros Rápidos -->
+            <div class="flex items-center bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-xs">
+              <button data-filter="all" class="filter-btn px-2.5 py-1 rounded-lg font-medium text-white bg-indigo-600 transition">Todas</button>
+              <button data-filter="pending" class="filter-btn px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition">Pendentes</button>
+              <button data-filter="completed" class="filter-btn px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition">Feitas</button>
+            </div>
+          </div>
+
+          <!-- Formulário Rápido de Adicionar Tarefa -->
+          <form id="formAddTask" class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 flex items-center gap-2 shadow-sm focus-within:border-indigo-500/60 focus-within:ring-1 focus-within:ring-indigo-500/30 transition">
+            <input 
+              id="inputTaskTitle" 
+              type="text" 
+              placeholder="Adicionar tarefa (ex: [FOCAR] Estudar)" 
+              class="flex-1 bg-transparent border-0 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none px-2"
+              required
+              autocomplete="off"
+            />
+            
+            <!-- Seletor de Tag/Prioridade Rápida -->
+            <select id="selectTaskTag" class="bg-slate-850 text-slate-300 border border-slate-800 text-xs rounded-xl px-2 py-1.5 focus:outline-none">
+              <option value="geral">Geral</option>
+              <option value="focar">🎯 [FOCAR]</option>
+              <option value="tarefa">⚡ [TAREFA]</option>
+            </select>
+
+            <!-- Botão Adicionar -->
+            <button type="submit" class="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold transition flex-shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </form>
+
+          <!-- Lista de Tarefas Renderizada -->
+          <ul id="taskList" class="space-y-2">
+            <!-- Injetado dinamicamente via JavaScript -->
+          </ul>
+
+          <!-- Empty State (quando não há tarefas) -->
+          <div id="tasksEmptyState" class="hidden text-center py-10 px-4 rounded-2xl bg-slate-900/60 border border-dashed border-slate-800">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-slate-850 flex items-center justify-center text-slate-500">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-slate-300">Nenhuma tarefa encontrada</h4>
+            <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+              Adicione uma tarefa acima ou toque em "Sincronizar Google Agenda" para importar eventos marcados.
+            </p>
+          </div>
+        </div>
+
+        <!-- ==================== CARTÃO DE AVISOS & PUSH ==================== -->
+        <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-sm font-semibold text-white">Alertas Mobile & Notificações</h4>
+                <p id="notifStatusText" class="text-[11px] text-slate-400">Verificando status de permissão...</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button id="btnRequestPermission" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 active:scale-95 text-xs font-medium text-slate-200 border border-slate-700 flex items-center justify-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span>Ativar Avisos</span>
+            </button>
+
+            <button id="btnTestNotification" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 active:scale-95 text-xs font-medium text-emerald-400 border border-slate-700 flex items-center justify-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span>Testar Aviso</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== TELA 2: AGENDA (PRÓXIMOS EVENTOS) ==================== -->
+      <section id="screenCalendar" class="hidden space-y-4 animate-fade-in">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-white">Google Agenda</h2>
+            <p class="text-xs text-slate-400">Compromissos sincronizados via Google Calendar</p>
+          </div>
+          <button id="btnRefreshCalendar" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white active:scale-95 transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Info Card de Sincronização -->
+        <div class="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-900/40 flex items-start gap-3">
+          <div class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="text-xs space-y-1">
+            <p class="font-semibold text-indigo-200">Como funciona a migração?</p>
+            <p class="text-slate-400 leading-relaxed">
+              Ao adicionar um evento no seu Google Agenda com as palavras-chave 
+              <span class="text-emerald-400 font-mono font-medium">[TAREFA]</span> ou 
+              <span class="text-indigo-400 font-mono font-medium">[FOCAR]</span>, 
+              o SyncLife transforma o compromisso em uma tarefa interativa no seu To-Do diário.
+            </p>
+          </div>
+        </div>
+
+        <!-- Lista de Eventos da Agenda -->
+        <div id="calendarEventsContainer" class="space-y-2.5">
+          <!-- Injetado dinamicamente -->
+        </div>
+
+        <!-- Empty State Agenda -->
+        <div id="calendarEmptyState" class="hidden text-center py-12 px-4 rounded-2xl bg-slate-900 border border-slate-800">
+          <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-slate-850 flex items-center justify-center text-slate-500">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <h4 class="text-sm font-semibold text-slate-300">Sem eventos no momento</h4>
+          <p class="text-xs text-slate-500 mt-1">Toque no botão de sincronizar para buscar eventos.</p>
+        </div>
+      </section>
+
+      <!-- ==================== TELA 3: INSTRUÇÕES & AJUDA ==================== -->
+      <section id="screenInstructions" class="hidden space-y-4 animate-fade-in">
+        <div>
+          <h2 class="text-lg font-bold text-white">Guia & Instruções</h2>
+          <p class="text-xs text-slate-400">Tudo o que você precisa para dominar o SyncLife PWA</p>
+        </div>
+
+        <!-- Acordeão / Cards de Ajuda -->
+        <div class="space-y-3">
+          
+          <!-- 1. Instalar na Tela de Início (PWA) -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+            <div class="flex items-center gap-2.5 text-indigo-400 font-semibold text-sm">
+              <div class="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                  <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+              </div>
+              <span>1. Como Instalar na Tela de Início (PWA)</span>
+            </div>
+            
+            <div class="text-xs text-slate-300 space-y-2 pt-1 pl-1">
+              <div class="flex items-start gap-2">
+                <span class="font-bold text-indigo-400">iOS (Safari):</span>
+                <span>Toque no botão de <strong>Compartilhar</strong> (ícone com quadrado e seta para cima) e selecione <strong>"Adicionar à Tela de Início"</strong>.</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="font-bold text-emerald-400">Android (Chrome):</span>
+                <span>Toque no menu de três pontos (⋮) no canto superior e escolha <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</span>
+              </div>
+              <p class="text-[11px] text-slate-400 italic">O app rodará em tela cheia, sem a barra de navegação do browser!</p>
+            </div>
+          </div>
+
+          <!-- 2. Como Funciona a Regra de Migração -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+            <div class="flex items-center gap-2.5 text-emerald-400 font-semibold text-sm">
+              <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                </svg>
+              </div>
+              <span>2. Regra Inteligente de Migração</span>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+              O SyncLife integra sua rotina de reuniões com sua execução diária:
+            </p>
+            <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li>Crie um compromisso no Google Agenda com <code class="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">[TAREFA]</code> no título (ex: <em>"[TAREFA] Pagar boleto da internet"</em>).</li>
+              <li>Ou utilize <code class="text-indigo-400 bg-slate-800 px-1 py-0.5 rounded">[FOCAR]</code> para blocos de foco de alta prioridade (ex: <em>"[FOCAR] Escrever proposta comercial"</em>).</li>
+              <li>Ao tocar em <strong>"Sincronizar Google"</strong>, o app detecta a tag e duplica o evento automaticamente para sua lista de tarefas do dia.</li>
+            </ul>
+          </div>
+
+          <!-- 3. Ativação de Avisos & Push -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+            <div class="flex items-center gap-2.5 text-indigo-400 font-semibold text-sm">
+              <div class="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              </div>
+              <span>3. Alertas & Notificações</span>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+              O sistema utiliza a <strong class="text-white">Web Notifications API</strong> combinada com alertas sonoros e vibração tátil nativa (<code class="text-slate-400">navigator.vibrate</code>). Quando habilitada, o app avisa quando tarefas são concluídas ou migradas com sucesso.
+            </p>
+            <button id="btnTestInstruction" class="w-full py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 active:scale-95 transition">
+              Disparar Notificação de Teste
+            </button>
+          </div>
+
+          <!-- 4. Chaves Google (OAuth2) & Modo Demonstração -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+            <div class="flex items-center gap-2.5 text-amber-400 font-semibold text-sm">
+              <div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </div>
+              <span>4. Modo Demo vs. Google Cloud Real</span>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+              O SyncLife vem pré-configurado no <strong>Modo Demo</strong> com dados fictícios realistas e funcionais para você testar imediatamente sem precisar de chaves.
+            </p>
+            <p class="text-xs text-slate-400">
+              Caso queira conectar seu Google Agenda real: acerte seu <code class="text-indigo-300">CLIENT_ID</code> e <code class="text-indigo-300">API_KEY</code> no Google Cloud Console com escopo <code class="text-indigo-300">calendar.readonly</code> e insira pelo botão de configurações abaixo:
+            </p>
+            <button id="btnOpenSettingsFromHelp" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-xs font-semibold text-white shadow-md shadow-indigo-600/30 transition">
+              Configurar Chaves Google OAuth
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ==================== MENU INFERIOR FIXO (MOBILE NAVIGATION) ==================== -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 glass-nav border-t border-slate-850">
+      <div class="mx-auto max-w-md px-6 py-2 flex items-center justify-around">
+        
+        <!-- Tab 1: Início -->
+        <button id="navHome" data-screen="home" class="nav-btn flex flex-col items-center gap-1 py-1 px-3 text-indigo-400 active:scale-95 transition">
+          <div class="relative">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <span class="text-[11px] font-semibold tracking-wide">Início</span>
+        </button>
+
+        <!-- Tab 2: Agenda -->
+        <button id="navCalendar" data-screen="calendar" class="nav-btn flex flex-col items-center gap-1 py-1 px-3 text-slate-400 hover:text-slate-200 active:scale-95 transition">
+          <div class="relative">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span id="calendarBadgeDot" class="hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <span class="text-[11px] font-semibold tracking-wide">Agenda</span>
+        </button>
+
+        <!-- Tab 3: Instruções -->
+        <button id="navInstructions" data-screen="instructions" class="nav-btn flex flex-col items-center gap-1 py-1 px-3 text-slate-400 hover:text-slate-200 active:scale-95 transition">
+          <div class="relative">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <span class="text-[11px] font-semibold tracking-wide">Instruções</span>
+        </button>
+
+      </div>
+    </nav>
+
+    <!-- ==================== MODAL DE CONFIGURAÇÃO DE CREDENCIAIS ==================== -->
+    <div id="modalSettings" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+      <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-fade-in">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-white text-base">Configurar Google API</h3>
+          </div>
+          <button id="btnCloseSettings" class="text-slate-400 hover:text-white p-1">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-400">
+          Deixe os campos em branco para continuar usando o <strong class="text-indigo-400">Modo Demo</strong> com dados simulados e migração inteligente.
+        </p>
+
+        <form id="formCredentials" class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Google OAuth Client ID</label>
+            <input 
+              id="inputClientId" 
+              type="text" 
+              placeholder="ex: 123456...apps.googleusercontent.com" 
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Google API Key (Opcional)</label>
+            <input 
+              id="inputApiKey" 
+              type="text" 
+              placeholder="ex: AIzaSy..." 
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 pt-2">
+            <button type="button" id="btnResetToDemo" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-xs font-medium text-slate-300 active:scale-95 transition">
+              Usar Modo Demo
+            </button>
+            <button type="submit" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white active:scale-95 transition">
+              Salvar Chaves
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
+    <div id="toastContainer" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center pointer-events-none space-y-2">
+      <!-- Injetado dinamicamente -->
+    </div>
+
+  </div>
+
+  <!-- ==================== LÓGICA JAVASCRIPT VANILLA COMPLETA ==================== -->
+  <script>
+    /**
+     * SyncLife - Progressive Web App
+     * Desenvolvido com Vanilla JS, Tailwind CSS e Google Identity Services.
+     */
+
+    // --- CONFIGURAÇÃO E ESTADO GLOBAL ---
+    const CONFIG = {
+      // Chaves padrão (caso o usuário não insira suas credenciais nas configurações)
+      CLIENT_ID: localStorage.getItem('synclife_client_id') || '',
+      API_KEY: localStorage.getItem('synclife_api_key') || '',
+      SCOPES: 'https://www.googleapis.com/auth/calendar.readonly',
+      STORAGE_TASKS_KEY: 'synclife_tasks_v1',
+      STORAGE_EVENTS_KEY: 'synclife_events_v1',
+      STORAGE_MIGRATED_KEY: 'synclife_migrated_ids_v1',
+    };
+
+    // Estado da Aplicação
+    const state = {
+      isDemoMode: !CONFIG.CLIENT_ID || CONFIG.CLIENT_ID.trim() === '',
+      tasks: [],
+      calendarEvents: [],
+      migratedEventIds: new Set(),
+      activeFilter: 'all', // 'all' | 'pending' | 'completed'
+      tokenClient: null,
+      accessToken: null,
+    };
+
+    // Dados Mock Realistas para o Modo Demo
+    const MOCK_CALENDAR_EVENTS = [
+      {
+        id: 'mock-evt-1',
+        summary: '[FOCAR] Revisar proposta da diretoria',
+        start: { dateTime: new Date(Date.now() + 3600000 * 2).toISOString() },
+        location: 'Sala de Foco 02',
+        description: 'Preparar métricas de Q4 para alinhamento.',
+      },
+      {
+        id: 'mock-evt-2',
+        summary: 'Reunião Semanal de Alinhamento (Sprint Sync)',
+        start: { dateTime: new Date(Date.now() + 3600000 * 4).toISOString() },
+        location: 'Google Meet',
+        description: 'Review dos entregáveis semanais da equipe.',
+      },
+      {
+        id: 'mock-evt-3',
+        summary: '[TAREFA] Enviar relatório financeiro consolidado',
+        start: { dateTime: new Date(Date.now() + 3600000 * 6).toISOString() },
+        location: 'Home Office',
+        description: 'Exportar balanço mensal e anexar no email da controladoria.',
+      },
+      {
+        id: 'mock-evt-4',
+        summary: 'Almoço com equipe de produto',
+        start: { dateTime: new Date(Date.now() + 3600000 * 8).toISOString() },
+        location: 'Restaurante Central',
+        description: 'Celebrar o lançamento da versão v2.0.',
+      },
+      {
+        id: 'mock-evt-5',
+        summary: '[FOCAR] Planejamento de Metas Trimestrais',
+        start: { dateTime: new Date(Date.now() + 3600000 * 10).toISOString() },
+        location: 'Bloco de Foco Silencioso',
+        description: 'Definição de OKRs de engenharia e produto.',
+      }
+    ];
+
+    // --- ELEMENTOS DO DOM ---
+    const dom = {
+      screenHome: document.getElementById('screenHome'),
+      screenCalendar: document.getElementById('screenCalendar'),
+      screenInstructions: document.getElementById('screenInstructions'),
+      navButtons: document.querySelectorAll('.nav-btn'),
+      navHome: document.getElementById('navHome'),
+      navCalendar: document.getElementById('navCalendar'),
+      navInstructions: document.getElementById('navInstructions'),
+      
+      // Header & Badges
+      badgeDemo: document.getElementById('badgeDemo'),
+      headerSubtitle: document.getElementById('headerSubtitle'),
+      currentDateDisplay: document.getElementById('currentDateDisplay'),
+      progressBar: document.getElementById('progressBar'),
+      taskProgressBadge: document.getElementById('taskProgressBadge'),
+      calendarBadgeDot: document.getElementById('calendarBadgeDot'),
+      
+      // Botões e Ações
+      btnSyncGoogle: document.getElementById('btnSyncGoogle'),
+      btnSyncText: document.getElementById('btnSyncText'),
+      syncSpinner: document.getElementById('syncSpinner'),
+      btnQuickNotify: document.getElementById('btnQuickNotify'),
+      btnRequestPermission: document.getElementById('btnRequestPermission'),
+      btnTestNotification: document.getElementById('btnTestNotification'),
+      btnTestInstruction: document.getElementById('btnTestInstruction'),
+      btnRefreshCalendar: document.getElementById('btnRefreshCalendar'),
+      notifStatusText: document.getElementById('notifStatusText'),
+      
+      // Tarefas
+      formAddTask: document.getElementById('formAddTask'),
+      inputTaskTitle: document.getElementById('inputTaskTitle'),
+      selectTaskTag: document.getElementById('selectTaskTag'),
+      taskList: document.getElementById('taskList'),
+      tasksEmptyState: document.getElementById('tasksEmptyState'),
+      taskCountPill: document.getElementById('taskCountPill'),
+      filterButtons: document.querySelectorAll('.filter-btn'),
+      
+      // Agenda
+      calendarEventsContainer: document.getElementById('calendarEventsContainer'),
+      calendarEmptyState: document.getElementById('calendarEmptyState'),
+      
+      // Modal Configurações
+      modalSettings: document.getElementById('modalSettings'),
+      btnOpenSettings: document.getElementById('btnOpenSettings'),
+      btnOpenSettingsFromHelp: document.getElementById('btnOpenSettingsFromHelp'),
+      btnCloseSettings: document.getElementById('btnCloseSettings'),
+      formCredentials: document.getElementById('formCredentials'),
+      inputClientId: document.getElementById('inputClientId'),
+      inputApiKey: document.getElementById('inputApiKey'),
+      btnResetToDemo: document.getElementById('btnResetToDemo'),
+      
+      // Toast Container
+      toastContainer: document.getElementById('toastContainer'),
+    };
+
+    // --- ÁUDIO & FEEDBACK TÁTIL (Web Audio API & Haptics) ---
+    function playBeep(frequency = 587.33, type = 'sine', duration = 0.12) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        // Áudio bloqueado pelo navegador antes de interação do usuário
+      }
+    }
+
+    function triggerHaptic(pattern = [50]) {
+      if ('vibrate' in navigator) {
+        try {
+          navigator.vibrate(pattern);
+        } catch (e) {}
+      }
+    }
+
+    // --- SISTEMA DE NOTIFICAÇÃO E AVISOS MOBILE ---
+    async function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        showToast('Notificações não são suportadas neste navegador.', 'error');
+        return false;
+      }
+      try {
+        const perm = await Notification.requestPermission();
+        updateNotificationStatusUI();
+        if (perm === 'granted') {
+          showToast('Notificações nativas ativadas com sucesso! 🎉', 'success');
+          triggerHaptic([50, 100, 50]);
+          playBeep(659.25);
+          sendLocalNotification('SyncLife Ativo', 'Você receberá avisos sobre tarefas e eventos importantes.');
+          return true;
+        } else if (perm === 'denied') {
+          showToast('Permissão de notificação negada pelo usuário.', 'error');
+          return false;
+        }
+      } catch (err) {
+        console.error('Erro ao pedir permissão de notificação:', err);
+      }
+      return false;
+    }
+
+    function sendLocalNotification(title, body, options = {}) {
+      triggerHaptic([100, 50, 100]);
+      playBeep(784, 'sine', 0.18);
+
+      // 1. Notificação do Sistema (Nativa se houver permissão)
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          const notif = new Notification(title, {
+            body: body,
+            icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%236366f1'/%3E%3Cpath d='M160 256l64 64 128-128' stroke='%23ffffff' stroke-width='48' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E",
+            badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='256' fill='%236366f1'/%3E%3C/svg%3E",
+            ...options,
+          });
+          notif.onclick = () => {
+            window.focus();
+            notif.close();
+          };
+        } catch (e) {
+          console.warn('Erro ao disparar Notification nativa:', e);
+        }
+      }
+
+      // 2. Notificação Visual Embutida (Toast Mobile) garantida para feedback imediato
+      showToast(`${title}: ${body}`, 'info');
+    }
+
+    function updateNotificationStatusUI() {
+      if (!('Notification' in window)) {
+        dom.notifStatusText.textContent = 'Avisos indisponíveis neste browser';
+        dom.notifStatusText.className = 'text-[11px] text-slate-500';
+        return;
+      }
+      
+      const perm = Notification.permission;
+      if (perm === 'granted') {
+        dom.notifStatusText.textContent = 'Permissão concedida: Avisos ativos';
+        dom.notifStatusText.className = 'text-[11px] text-emerald-400 font-medium';
+        dom.btnRequestPermission.classList.add('opacity-50', 'pointer-events-none');
+        dom.btnRequestPermission.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Ativado</span>
+        `;
+      } else if (perm === 'denied') {
+        dom.notifStatusText.textContent = 'Avisos bloqueados nas configurações do celular';
+        dom.notifStatusText.className = 'text-[11px] text-rose-400 font-medium';
+      } else {
+        dom.notifStatusText.textContent = 'Toque em Ativar para autorizar alertas';
+        dom.notifStatusText.className = 'text-[11px] text-slate-400';
+      }
+    }
+
+    // --- SISTEMA DE TOAST NOTIFICATIONS (UI MOBILE) ---
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      
+      const typeStyles = {
+        info: 'bg-slate-900 border-indigo-500/50 text-indigo-200',
+        success: 'bg-slate-900 border-emerald-500/50 text-emerald-200',
+        error: 'bg-slate-900 border-rose-500/50 text-rose-200',
+      };
+      
+      const iconSvg = {
+        info: `<svg class="w-4 h-4 text-indigo-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+        success: `<svg class="w-4 h-4 text-emerald-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+        error: `<svg class="w-4 h-4 text-rose-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-2xl text-xs max-w-sm w-full animate-fade-in transition-all backdrop-blur-md ${typeStyles[type] || typeStyles.info}`;
+      toast.innerHTML = `
+        ${iconSvg[type] || iconSvg.info}
+        <span class="flex-1 font-medium leading-tight">${message}</span>
+      `;
+
+      dom.toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 250);
+      }, 3500);
+    }
+
+    // --- GERENCIAMENTO DE PERSISTÊNCIA (LocalStorage) ---
+    function loadSavedState() {
+      try {
+        const storedTasks = localStorage.getItem(CONFIG.STORAGE_TASKS_KEY);
+        if (storedTasks) {
+          state.tasks = JSON.parse(storedTasks);
+        } else {
+          // Tarefas iniciais de exemplo se o storage estiver vazio
+          state.tasks = [
+            {
+              id: 'initial-1',
+              title: '[FOCAR] Organizar rotina matinal',
+              tag: 'focar',
+              origin: 'local',
+              completed: true,
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'initial-2',
+              title: 'Beber 2 litros de água durante o dia',
+              tag: 'geral',
+              origin: 'local',
+              completed: false,
+              createdAt: new Date().toISOString()
+            }
+          ];
+          saveTasks();
+        }
+
+        const storedMigrated = localStorage.getItem(CONFIG.STORAGE_MIGRATED_KEY);
+        if (storedMigrated) {
+          state.migratedEventIds = new Set(JSON.parse(storedMigrated));
+        }
+
+        const storedEvents = localStorage.getItem(CONFIG.STORAGE_EVENTS_KEY);
+        if (storedEvents) {
+          state.calendarEvents = JSON.parse(storedEvents);
+        }
+      } catch (err) {
+        console.error('Erro ao ler localStorage:', err);
+      }
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(CONFIG.STORAGE_TASKS_KEY, JSON.stringify(state.tasks));
+      } catch (e) {
+        console.error('Erro ao gravar tarefas no localStorage:', e);
+      }
+    }
+
+    function saveMigratedEventIds() {
+      try {
+        localStorage.setItem(CONFIG.STORAGE_MIGRATED_KEY, JSON.stringify([...state.migratedEventIds]));
+      } catch (e) {}
+    }
+
+    function saveEvents() {
+      try {
+        localStorage.setItem(CONFIG.STORAGE_EVENTS_KEY, JSON.stringify(state.calendarEvents));
+      } catch (e) {}
+    }
+
+    // --- REGRA DE MIGRAÇÃO INTELIGENTE DO GOOGLE CALENDAR ---
+    /**
+     * REGRA DE NEGÓCIO:
+     * Sempre que um evento do Google Agenda contiver as tags "[TAREFA]" ou "[FOCAR]" no título,
+     * o app deve gerar automaticamente uma cópia desse compromisso dentro da lista local de "Tarefas do Dia".
+     */
+    function processCalendarMigration(events) {
+      let migratedCount = 0;
+
+      events.forEach(event => {
+        const title = event.summary || '';
+        const isFocusTag = /\[FOCAR\]/i.test(title);
+        const isTaskTag = /\[TAREFA\]/i.test(title);
+
+        if (isFocusTag || isTaskTag) {
+          // Verifica se já foi migrado para evitar duplicatas infinitas
+          const alreadyMigrated = state.migratedEventIds.has(event.id) || 
+            state.tasks.some(t => t.calendarEventId === event.id);
+
+          if (!alreadyMigrated) {
+            const detectedTag = isFocusTag ? 'focar' : 'tarefa';
+            
+            // Cria a nova tarefa no To-Do List
+            const newTask = {
+              id: 'migrated-' + event.id + '-' + Date.now(),
+              calendarEventId: event.id,
+              title: title,
+              tag: detectedTag,
+              origin: 'google',
+              completed: false,
+              createdAt: new Date().toISOString(),
+              dueTime: event.start?.dateTime ? formatTimeOnly(event.start.dateTime) : 'Hoje',
+            };
+
+            state.tasks.unshift(newTask);
+            state.migratedEventIds.add(event.id);
+            migratedCount++;
+          }
+        }
+      });
+
+      if (migratedCount > 0) {
+        saveTasks();
+        saveMigratedEventIds();
+        renderTasks();
+        
+        sendLocalNotification(
+          'Migração do Google Concluída',
+          `${migratedCount} compromisso(s) marcado(s) viraram tarefas no seu To-Do!`
+        );
+      }
+
+      return migratedCount;
+    }
+
+    // --- FLUXO DE SINCRONIZAÇÃO DO GOOGLE AGENDA ---
+    async function handleSyncGoogleCalendar() {
+      setSyncingUI(true);
+      playBeep(440, 'sine', 0.1);
+
+      try {
+        if (state.isDemoMode) {
+          // Simula latência de rede realista para o Modo Demo
+          await new Promise(resolve => setTimeout(resolve, 900));
+          
+          state.calendarEvents = [...MOCK_CALENDAR_EVENTS];
+          saveEvents();
+
+          const count = processCalendarMigration(state.calendarEvents);
+          renderCalendarEvents();
+
+          if (count === 0) {
+            showToast('Google Agenda sincronizado. Nenhuma nova tarefa com [TAREFA] ou [FOCAR].', 'info');
+          }
+        } else {
+          // Modo Real com Google Identity Services (OAuth2)
+          await fetchRealGoogleCalendarEvents();
+        }
+      } catch (err) {
+        console.error('Falha na sincronização:', err);
+        showToast('Erro ao sincronizar com Google Calendar: ' + (err.message || 'Falha de conexão'), 'error');
+      } finally {
+        setSyncingUI(false);
+      }
+    }
+
+    // Inicialização do Google Identity Services (GSI)
+    function initGoogleClient() {
+      if (!CONFIG.CLIENT_ID || CONFIG.CLIENT_ID.trim() === '') {
+        state.isDemoMode = true;
+        updateDemoModeBadge();
+        return;
+      }
+
+      state.isDemoMode = false;
+      updateDemoModeBadge();
+
+      if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+        try {
+          state.tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CONFIG.CLIENT_ID,
+            scope: CONFIG.SCOPES,
+            callback: async (tokenResponse) => {
+              if (tokenResponse.error) {
+                showToast('Erro de autorização Google: ' + tokenResponse.error, 'error');
+                return;
+              }
+              state.accessToken = tokenResponse.access_token;
+              await fetchEventsWithToken(state.accessToken);
+            },
+          });
+        } catch (e) {
+          console.error('Erro ao instanciar tokenClient:', e);
+        }
+      }
+    }
+
+    async function fetchRealGoogleCalendarEvents() {
+      if (!state.tokenClient) {
+        showToast('Google Identity Client não carregado. Verifique sua conexão.', 'error');
+        return;
+      }
+
+      if (!state.accessToken) {
+        // Solicita token de acesso ao usuário
+        state.tokenClient.requestAccessToken({ prompt: 'consent' });
+      } else {
+        await fetchEventsWithToken(state.accessToken);
+      }
+    }
+
+    async function fetchEventsWithToken(token) {
+      try {
+        const timeMin = new Date().toISOString();
+        const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&singleEvents=true&orderBy=startTime&maxResults=20`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Token expirado, limpa para solicitar novamente
+            state.accessToken = null;
+            state.tokenClient.requestAccessToken({ prompt: '' });
+            return;
+          }
+          throw new Error(`Erro na API do Google Calendar (${response.status})`);
+        }
+
+        const data = await response.json();
+        const items = data.items || [];
+        state.calendarEvents = items;
+        saveEvents();
+
+        const count = processCalendarMigration(items);
+        renderCalendarEvents();
+
+        if (count === 0) {
+          showToast(`Sincronizado: ${items.length} eventos obtidos.`, 'success');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar eventos:', error);
+        showToast('Erro ao ler eventos: ' + error.message, 'error');
+      }
+    }
+
+    function setSyncingUI(isSyncing) {
+      if (isSyncing) {
+        dom.btnSyncGoogle.disabled = true;
+        dom.btnSyncText.textContent = 'Sincronizando...';
+        dom.syncSpinner.classList.remove('hidden');
+        dom.headerSubtitle.textContent = 'Buscando eventos na nuvem...';
+      } else {
+        dom.btnSyncGoogle.disabled = false;
+        dom.btnSyncText.textContent = 'Sincronizar Google Agenda';
+        dom.syncSpinner.classList.add('hidden');
+        dom.headerSubtitle.textContent = 'Atualizado agora mesmo';
+      }
+    }
+
+    function updateDemoModeBadge() {
+      if (state.isDemoMode) {
+        dom.badgeDemo.classList.remove('hidden');
+      } else {
+        dom.badgeDemo.classList.add('hidden');
+      }
+    }
+
+    // --- RENDERIZAÇÃO DA TO-DO LIST ---
+    function renderTasks() {
+      dom.taskList.innerHTML = '';
+      
+      const filtered = state.tasks.filter(task => {
+        if (state.activeFilter === 'pending') return !task.completed;
+        if (state.activeFilter === 'completed') return task.completed;
+        return true;
+      });
+
+      // Atualiza contadores e barra de progresso
+      const total = state.tasks.length;
+      const completed = state.tasks.filter(t => t.completed).length;
+      dom.taskProgressBadge.textContent = `${completed} / ${total}`;
+      dom.taskCountPill.textContent = total;
+      
+      const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+      dom.progressBar.style.width = `${pct}%`;
+
+      if (filtered.length === 0) {
+        dom.tasksEmptyState.classList.remove('hidden');
+      } else {
+        dom.tasksEmptyState.classList.add('hidden');
+      }
+
+      filtered.forEach(task => {
+        const li = document.createElement('li');
+        li.className = `group flex items-center justify-between p-3 rounded-2xl border transition-all duration-200 ${
+          task.completed 
+            ? 'bg-slate-900/40 border-slate-850/60 opacity-60' 
+            : 'bg-slate-900 border-slate-800 shadow-sm'
+        }`;
+
+        // Tag visual
+        let tagBadge = '';
+        if (task.tag === 'focar') {
+          tagBadge = `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20">🎯 FOCAR</span>`;
+        } else if (task.tag === 'tarefa') {
+          tagBadge = `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">⚡ TAREFA</span>`;
+        }
+
+        // Origem Google badge
+        const googleBadge = task.origin === 'google' 
+          ? `<span title="Migrado do Google Agenda" class="text-[9px] font-semibold text-indigo-400 bg-indigo-950/60 border border-indigo-800/40 px-1 py-0.5 rounded flex items-center gap-1">
+              <svg class="w-2.5 h-2.5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+              Google
+            </span>`
+          : '';
+
+        li.innerHTML = `
+          <div class="flex items-center gap-3 flex-1 min-w-0 pr-2 cursor-pointer" onclick="toggleTaskCompletion('${task.id}')">
+            <!-- Botão Checkbox Personalizado -->
+            <button type="button" class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+              task.completed 
+                ? 'bg-emerald-500 text-slate-950 shadow-sm' 
+                : 'border border-slate-700 bg-slate-850 hover:border-indigo-400'
+            }">
+              ${task.completed ? `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+            </button>
+
+            <!-- Título e Metadados -->
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-slate-200 truncate ${task.completed ? 'line-through text-slate-500' : ''}">
+                ${escapeHtml(task.title)}
+              </p>
+              <div class="flex items-center gap-1.5 mt-1">
+                ${tagBadge}
+                ${googleBadge}
+                ${task.dueTime ? `<span class="text-[10px] text-slate-500">${task.dueTime}</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Botão Excluir -->
+          <button onclick="deleteTask('${task.id}', event)" class="p-1.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-slate-800 active:scale-95 transition" title="Excluir tarefa">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"/>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            </svg>
+          </button>
+        `;
+
+        dom.taskList.appendChild(li);
+      });
+    }
+
+    // Ações de Tarefas
+    window.toggleTaskCompletion = function(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+
+      task.completed = !task.completed;
+      saveTasks();
+      renderTasks();
+
+      if (task.completed) {
+        triggerHaptic([30, 30]);
+        playBeep(880, 'triangle', 0.1);
+      } else {
+        playBeep(440, 'triangle', 0.08);
+      }
+    };
+
+    window.deleteTask = function(id, event) {
+      if (event) event.stopPropagation();
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      saveTasks();
+      renderTasks();
+      triggerHaptic([40]);
+      showToast('Tarefa removida.', 'info');
+    };
+
+    function handleAddTask(e) {
+      e.preventDefault();
+      const title = dom.inputTaskTitle.value.trim();
+      if (!title) return;
+
+      // Auto-identifica tag se digitada no título ou via seletor
+      let tag = dom.selectTaskTag.value;
+      if (/\[FOCAR\]/i.test(title)) tag = 'focar';
+      if (/\[TAREFA\]/i.test(title)) tag = 'tarefa';
+
+      const newTask = {
+        id: 'task-' + Date.now(),
+        title: title,
+        tag: tag,
+        origin: 'local',
+        completed: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      state.tasks.unshift(newTask);
+      saveTasks();
+      renderTasks();
+
+      dom.inputTaskTitle.value = '';
+      triggerHaptic([40]);
+      playBeep(523.25, 'sine', 0.1);
+      showToast('Tarefa adicionada à lista.', 'success');
+    }
+
+    // --- RENDERIZAÇÃO DA AGENDA (CALENDÁRIO) ---
+    function renderCalendarEvents() {
+      dom.calendarEventsContainer.innerHTML = '';
+      const events = state.calendarEvents;
+
+      if (!events || events.length === 0) {
+        dom.calendarEmptyState.classList.remove('hidden');
+        dom.calendarBadgeDot.classList.add('hidden');
+        return;
+      }
+
+      dom.calendarEmptyState.classList.add('hidden');
+      dom.calendarBadgeDot.classList.remove('hidden');
+
+      events.forEach(event => {
+        const title = event.summary || 'Sem Título';
+        const isFocus = /\[FOCAR\]/i.test(title);
+        const isTask = /\[TAREFA\]/i.test(title);
+        const isMigrated = state.migratedEventIds.has(event.id);
+
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-2xl border transition-all ${
+          isFocus 
+            ? 'bg-slate-900/90 border-indigo-900/50 hover:border-indigo-500/50' 
+            : isTask 
+            ? 'bg-slate-900/90 border-amber-900/40 hover:border-amber-500/50' 
+            : 'bg-slate-900 border-slate-800'
+        }`;
+
+        let statusBadge = '';
+        if (isMigrated) {
+          statusBadge = `
+            <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Copiado p/ To-Do
+            </span>
+          `;
+        } else if (isFocus || isTask) {
+          statusBadge = `
+            <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-300 bg-indigo-950/60 border border-indigo-800/40 px-2 py-0.5 rounded-full">
+              Pendente de Migração
+            </span>
+          `;
+        }
+
+        const dateStr = event.start?.dateTime 
+          ? formatFullDateTime(event.start.dateTime) 
+          : (event.start?.date || 'Dia Inteiro');
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="space-y-1 flex-1 min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-bold text-white leading-snug">${escapeHtml(title)}</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px] text-slate-400">
+                <span class="flex items-center gap-1 text-indigo-300">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  ${dateStr}
+                </span>
+                ${event.location ? `<span class="truncate text-slate-500">• ${escapeHtml(event.location)}</span>` : ''}
+              </div>
+              ${event.description ? `<p class="text-[11px] text-slate-400 line-clamp-2 mt-1">${escapeHtml(event.description)}</p>` : ''}
+            </div>
+            <div>${statusBadge}</div>
+          </div>
+        `;
+
+        dom.calendarEventsContainer.appendChild(card);
+      });
+    }
+
+    // --- NAVEGAÇÃO ENTRE TELAS (MOBILE TAB BAR) ---
+    function switchScreen(screenName) {
+      triggerHaptic([20]);
+      
+      // Atualiza botões da nav
+      dom.navButtons.forEach(btn => {
+        const isCurrent = btn.dataset.screen === screenName;
+        if (isCurrent) {
+          btn.classList.add('text-indigo-400');
+          btn.classList.remove('text-slate-400');
+        } else {
+          btn.classList.remove('text-indigo-400');
+          btn.classList.add('text-slate-400');
+        }
+      });
+
+      // Alterna visibilidade das seções
+      dom.screenHome.classList.toggle('hidden', screenName !== 'home');
+      dom.screenCalendar.classList.toggle('hidden', screenName !== 'calendar');
+      dom.screenInstructions.classList.toggle('hidden', screenName !== 'instructions');
+
+      // Scroll suave para o topo ao trocar de tela
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- FORMULÁRIO DE CREDENCIAIS / CONFIGURAÇÕES ---
+    function setupCredentialsModal() {
+      dom.btnOpenSettings.onclick = () => {
+        dom.inputClientId.value = CONFIG.CLIENT_ID;
+        dom.inputApiKey.value = CONFIG.API_KEY;
+        dom.modalSettings.classList.remove('hidden');
+        dom.modalSettings.classList.add('flex');
+      };
+
+      dom.btnOpenSettingsFromHelp.onclick = () => {
+        dom.btnOpenSettings.click();
+      };
+
+      dom.btnCloseSettings.onclick = () => {
+        dom.modalSettings.classList.add('hidden');
+        dom.modalSettings.classList.remove('flex');
+      };
+
+      dom.formCredentials.onsubmit = (e) => {
+        e.preventDefault();
+        const cid = dom.inputClientId.value.trim();
+        const akey = dom.inputApiKey.value.trim();
+
+        CONFIG.CLIENT_ID = cid;
+        CONFIG.API_KEY = akey;
+        localStorage.setItem('synclife_client_id', cid);
+        localStorage.setItem('synclife_api_key', akey);
+
+        initGoogleClient();
+        dom.btnCloseSettings.click();
+        showToast('Configurações salvas com sucesso!', 'success');
+      };
+
+      dom.btnResetToDemo.onclick = () => {
+        CONFIG.CLIENT_ID = '';
+        CONFIG.API_KEY = '';
+        localStorage.removeItem('synclife_client_id');
+        localStorage.removeItem('synclife_api_key');
+        dom.inputClientId.value = '';
+        dom.inputApiKey.value = '';
+        initGoogleClient();
+        dom.btnCloseSettings.click();
+        showToast('Restaurado para o Modo Demo!', 'info');
+      };
+    }
+
+    // --- FILTROS DA LISTA DE TAREFAS ---
+    function setupFilterButtons() {
+      dom.filterButtons.forEach(btn => {
+        btn.onclick = () => {
+          const filter = btn.dataset.filter;
+          state.activeFilter = filter;
+          
+          dom.filterButtons.forEach(b => {
+            if (b === btn) {
+              b.classList.add('bg-indigo-600', 'text-white');
+              b.classList.remove('text-slate-400');
+            } else {
+              b.classList.remove('bg-indigo-600', 'text-white');
+              b.classList.add('text-slate-400');
+            }
+          });
+
+          renderTasks();
+        };
+      });
+    }
+
+    // --- FORMATAÇÃO DE DATA E HORA ---
+    function updateDateHeader() {
+      const now = new Date();
+      const options = { weekday: 'long', day: 'numeric', month: 'short' };
+      const formatted = now.toLocaleDateString('pt-BR', options);
+      // Capitaliza a primeira letra
+      dom.currentDateDisplay.textContent = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    }
+
+    function formatTimeOnly(isoString) {
+      try {
+        const d = new Date(isoString);
+        return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function formatFullDateTime(isoString) {
+      try {
+        const d = new Date(isoString);
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        return isoString;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // --- REGISTRO INLINE DO SERVICE WORKER (PWA) ---
+    function registerPWA() {
+      if ('serviceWorker' in navigator) {
+        // Cria um Service Worker funcional através de Blob para arquivo único (Single File PWA)
+        const swScript = `
+          const CACHE_NAME = 'synclife-cache-v1';
+          self.addEventListener('install', (e) => {
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(clients.claim());
+          });
+          self.addEventListener('fetch', (e) => {
+            // Estratégia Network first com fallback para cache
+            e.respondWith(
+              fetch(e.request).catch(() => caches.match(e.request))
+            );
+          });
+        `;
+        try {
+          const blob = new Blob([swScript], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(blob);
+          navigator.serviceWorker.register(swUrl).catch((err) => {
+            console.log('ServiceWorker demo registration:', err);
+          });
+        } catch (e) {}
+      }
+    }
+
+    // --- INICIALIZAÇÃO GERAL DO APLICATIVO ---
+    function initApp() {
+      updateDateHeader();
+      loadSavedState();
+      updateNotificationStatusUI();
+      setupCredentialsModal();
+      setupFilterButtons();
+      initGoogleClient();
+      registerPWA();
+
+      // Render inicial
+      renderTasks();
+      renderCalendarEvents();
+
+      // Listeners de Navegação
+      dom.navButtons.forEach(btn => {
+        btn.addEventListener('click', () => switchScreen(btn.dataset.screen));
+      });
+
+      // Listeners de Ações
+      dom.formAddTask.addEventListener('submit', handleAddTask);
+      dom.btnSyncGoogle.addEventListener('click', handleSyncGoogleCalendar);
+      dom.btnRefreshCalendar.addEventListener('click', handleSyncGoogleCalendar);
+
+      // Notificações
+      dom.btnRequestPermission.addEventListener('click', requestNotificationPermission);
+      
+      const fireSampleNotification = () => {
+        sendLocalNotification(
+          '🔔 SyncLife Notificação',
+          'Lembrete: [FOCAR] Revisar proposta da diretoria às 14:00!'
+        );
+      };
+
+      dom.btnTestNotification.addEventListener('click', fireSampleNotification);
+      dom.btnQuickNotify.addEventListener('click', fireSampleNotification);
+      dom.btnTestInstruction.addEventListener('click', fireSampleNotification);
+
+      // Se for a primeira vez no modo demo e não houver eventos, carrega o mock
+      if (state.calendarEvents.length === 0) {
+        state.calendarEvents = [...MOCK_CALENDAR_EVENTS];
+        saveEvents();
+        renderCalendarEvents();
+      }
+    }
+
+    // Executa ao carregar o DOM
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
