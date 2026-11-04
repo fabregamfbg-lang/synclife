@@ -54,8 +54,8 @@
     }
   </script>
 
-  <!-- Google Identity Services (OAuth2) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google Identity Services (OAuth2) - onload garante que o client esteja pronto antes de qualquer uso -->
+  <script src="https://accounts.google.com/gsi/client" async defer onload="onGsiLoaded()"></script>
 
   <!-- Estilos customizados para experiência nativa mobile -->
   <style>
@@ -979,6 +979,13 @@
     }
 
     // Inicialização do Google Identity Services (GSI)
+    // Chamado pelo onload do script GSI — garante que window.google esteja disponível
+    function onGsiLoaded() {
+      console.log('[SyncLife] GSI library carregada com sucesso.');
+      initGoogleClient();
+    }
+
+    // Inicialização do Google Identity Services (GSI)
     function initGoogleClient() {
       if (!CONFIG.CLIENT_ID || CONFIG.CLIENT_ID.trim() === '') {
         state.isDemoMode = true;
@@ -1010,8 +1017,13 @@
     }
 
     async function fetchRealGoogleCalendarEvents() {
+      // Tenta inicializar o client caso o GSI tenha carregado após o initApp
       if (!state.tokenClient) {
-        showToast('Google Identity Client não carregado. Verifique sua conexão.', 'error');
+        initGoogleClient();
+      }
+
+      if (!state.tokenClient) {
+        showToast('Google Identity Client não carregado. Aguarde e tente novamente.', 'error');
         return;
       }
 
@@ -1464,7 +1476,11 @@
       updateNotificationStatusUI();
       setupCredentialsModal();
       setupFilterButtons();
-      initGoogleClient();
+      // Nota: initGoogleClient() é chamado pelo onGsiLoaded() quando a lib GSI termina de carregar.
+      // Chamamos também aqui como fallback caso o script já estivesse em cache e o onload não disparar.
+      if (window.google && window.google.accounts) {
+        initGoogleClient();
+      }
       registerPWA();
 
       // Render inicial
